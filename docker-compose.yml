@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: ylsh-admin
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=ylsh-secret-key-2026
+      - DATABASE_URL=mysql+pymysql://root:ylsh2026@ylsh-mysql:3306/ylsh?charset=utf8mb4
+      - FLASK_ENV=production
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - ylsh-net
+
+  db:
+    image: docker.m.daocloud.io/mysql:8.0
+    container_name: ylsh-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=ylsh2026
+      - MYSQL_DATABASE=ylsh
+      - MYSQL_CHARSET=utf8mb4
+      - MYSQL_COLLATION=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - ylsh-net
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  mysql-data:
+
+networks:
+  ylsh-net:
+    driver: bridge
