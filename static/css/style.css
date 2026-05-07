@@ -1,0 +1,256 @@
+/* ============================================
+   银龄守护 · 街道管理后台 · 自定义样式
+   ============================================ */
+
+:root {
+    --sidebar-width: 220px;
+    --sidebar-bg: #2D3436;
+    --sidebar-text: #DFE6E9;
+    --sidebar-hover: #E17055;
+    --sidebar-active: #E17055;
+    --topbar-height: 56px;
+    --topbar-bg: #FFFFFF;
+    --content-bg: #F5F6FA;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --p0-color: #FF7675;
+    --p1-color: #FDCB6E;
+    --p2-color: #74B9FF;
+    --p3-color: #B2BEC3;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--content-bg);
+    min-height: 100vh;
+}
+
+/* ---------- 侧边栏 ---------- */
+.sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: transform .3s ease;
+}
+
+.sidebar-header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-header h5 {
+    color: #FFF;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+.sidebar-header h5 i { color: var(--sidebar-hover); margin-right: 6px; }
+.sidebar-header small { color: #B2BEC3; font-size: 12px; }
+
+.sidebar-nav { padding: 12px 0; }
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all .2s ease;
+    border-left: 3px solid transparent;
+}
+.sidebar-nav .nav-link i { width: 22px; margin-right: 10px; text-align: center; }
+.sidebar-nav .nav-link:hover {
+    background: rgba(255,255,255,0.08);
+    color: #FFF;
+    border-left-color: var(--sidebar-hover);
+}
+.sidebar-nav .nav-link.active {
+    background: rgba(225,112,85,0.15);
+    color: var(--sidebar-active);
+    border-left-color: var(--sidebar-active);
+    font-weight: 600;
+}
+
+/* ---------- 主内容区 ---------- */
+.main-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+}
+
+.top-bar {
+    position: sticky; top: 0;
+    height: var(--topbar-height);
+    background: var(--topbar-bg);
+    border-bottom: 1px solid #E9ECEF;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.page-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2D3436;
+    flex: 1;
+}
+.user-info {
+    color: #636E72;
+    font-size: 14px;
+}
+.user-info i { margin-right: 6px; }
+
+.content-area {
+    padding: 24px;
+}
+
+/* ---------- 统计卡片 ---------- */
+.stat-card {
+    background: #FFF;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform .2s ease;
+}
+.stat-card:hover { transform: translateY(-2px); }
+
+.stat-card .stat-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #FFF;
+}
+.stat-icon.elderly  { background: linear-gradient(135deg, #74B9FF, #0984E3); }
+.stat-icon.alert    { background: linear-gradient(135deg, #FF7675, #D63031); }
+.stat-icon.order    { background: linear-gradient(135deg, #55EFC4, #00B894); }
+.stat-icon.worker   { background: linear-gradient(135deg, #FDCB6E, #E17055); }
+
+.stat-card .stat-info { flex: 1; }
+.stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2D3436;
+    line-height: 1.2;
+}
+.stat-card .stat-label {
+    font-size: 13px;
+    color: #B2BEC3;
+    margin-top: 2px;
+}
+
+/* ---------- 表格 ---------- */
+.data-table {
+    background: #FFF;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+.data-table .table { margin-bottom: 0; }
+.data-table thead th {
+    background: #F8F9FA;
+    border-bottom: 2px solid #E9ECEF;
+    font-size: 13px;
+    font-weight: 600;
+    color: #636E72;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+.data-table tbody td {
+    padding: 12px 16px;
+    font-size: 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #F1F2F6;
+}
+.data-table tbody tr:hover { background: #F8F9FA; }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* ---------- 告警级别标签 ---------- */
+.badge-level {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: #FFF;
+}
+.badge-level.p0 { background: var(--p0-color); }
+.badge-level.p1 { background: var(--p1-color); color: #2D3436; }
+.badge-level.p2 { background: var(--p2-color); }
+.badge-level.p3 { background: var(--p3-color); color: #636E72; }
+
+/* ---------- 状态标签 ---------- */
+.badge-status {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+.badge-status.pending   { background: #FFEAA7; color: #636E72; }
+.badge-status.active    { background: #55EFC4; color: #00695C; }
+.badge-status.resolved  { background: #DFE6E9; color: #636E72; }
+.badge-status.cancelled { background: #FF7675; color: #FFF; }
+
+/* ---------- 筛选栏 ---------- */
+.filter-bar {
+    background: #FFF;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+}
+.filter-bar .form-select,
+.filter-bar .form-control {
+    font-size: 13px;
+    max-width: 180px;
+}
+.filter-bar label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #636E72;
+    margin-right: 6px;
+}
+
+/* ---------- 操作按钮 ---------- */
+.btn-action {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+/* ---------- 分页 ---------- */
+.pagination { margin-top: 16px; justify-content: center; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .stat-card .stat-value { font-size: 22px; }
+    .filter-bar .form-select,
+    .filter-bar .form-control { max-width: 100%; }
+}
+
+/* ---------- 空状态 ---------- */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #B2BEC3;
+}
+.empty-state i { font-size: 48px; margin-bottom: 16px; }
+.empty-state p { font-size: 16px; }

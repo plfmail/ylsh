@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}服务管理 - 银龄守护{% endblock %}
+{% block page_title %}<i class="fas fa-handshake-angle"></i> 服务管理{% endblock %}
+
+{% block content %}
+<!-- 筛选栏 -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('services.services_list') }}" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-0 small">订单状态</label>
+                <select name="order_status" class="form-select form-select-sm">
+                    <option value="">全部</option>
+                    <option value="0" {% if current_status == 0 %}selected{% endif %}>待提交</option>
+                    <option value="1" {% if current_status == 1 %}selected{% endif %}>待支付</option>
+                    <option value="2" {% if current_status == 2 %}selected{% endif %}>已支付</option>
+                    <option value="3" {% if current_status == 3 %}selected{% endif %}>待接单</option>
+                    <option value="4" {% if current_status == 4 %}selected{% endif %}>已接单</option>
+                    <option value="5" {% if current_status == 5 %}selected{% endif %}>服务中</option>
+                    <option value="6" {% if current_status == 6 %}selected{% endif %}>已完成</option>
+                    <option value="7" {% if current_status == 7 %}selected{% endif %}>已取消</option>
+                    <option value="8" {% if current_status == 8 %}selected{% endif %}>已退款</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small">开始日期</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small">结束日期</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> 筛选</button>
+                <a href="{{ url_for('services.services_list') }}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-rotate-left"></i> 重置</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 订单表格 -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>订单号</th>
+                        <th>老人</th>
+                        <th>服务</th>
+                        <th>服务人员</th>
+                        <th>金额</th>
+                        <th>状态</th>
+                        <th>日期</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr>
+                        <td><code>{{ o.order_no }}</code></td>
+                        <td>{{ o.elderly_name }}</td>
+                        <td>{{ o.product_name }}</td>
+                        <td>{{ o.worker_name }}</td>
+                        <td>¥{{ "%.2f"|format(o.final_price) }}</td>
+                        <td>
+                            <span class="badge order-status-{{ o.order_status }}">
+                                {{ o.order_status_text }}
+                            </span>
+                        </td>
+                        <td>{{ o.service_date }}</td>
+                        <td>
+                            <a href="{{ url_for('services.order_detail', order_id=o.order_id) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> 详情
+                            </a>
+                            {% if o.order_status in [2, 3] %}
+                            <button class="btn btn-sm btn-outline-success btn-assign-order"
+                                    data-id="{{ o.order_id }}">
+                                <i class="fas fa-user-plus"></i> 指派
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">暂无订单记录</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 分页 -->
+{% if pagination.pages > 1 %}
+<nav class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('services.services_list', page=pagination.prev_num, order_status=current_status, date_from=date_from, date_to=date_to) }}">上一页</a>
+        </li>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('services.services_list', page=p, order_status=current_status, date_from=date_from, date_to=date_to) }}">{{ p }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('services.services_list', page=pagination.next_num, order_status=current_status, date_from=date_from, date_to=date_to) }}">下一页</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- 指派弹窗 -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">指派服务人员</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignForm">
+                    <input type="hidden" id="assignOrderId">
+                    <div class="mb-3">
+                        <label class="form-label">服务人员ID</label>
+                        <input type="number" class="form-control" id="assignWorkerId" required
+                               placeholder="输入服务人员ID">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submitAssign">确认指派</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let assignModal;
+document.addEventListener('DOMContentLoaded', () => {
+    assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+
+    document.querySelectorAll('.btn-assign-order').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('assignOrderId').value = btn.dataset.id;
+            assignModal.show();
+        });
+    });
+
+    document.getElementById('submitAssign').addEventListener('click', () => {
+        const orderId = document.getElementById('assignOrderId').value;
+        const workerId = document.getElementById('assignWorkerId').value;
+        if (!workerId) { alert('请输入服务人员ID'); return; }
+
+        fetch(`/services/${orderId}/assign`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ worker_id: parseInt(workerId) })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.code === 0) {
+                assignModal.hide();
+                location.reload();
+            } else {
+                alert(res.msg || '指派失败');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

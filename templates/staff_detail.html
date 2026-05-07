@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人员详情 - 银龄守护管理后台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>银龄守护 · 街道管理后台</h1>
+            <nav class="nav">
+                <a href="{{ url_for('dashboard.dashboard_page') }}">仪表盘</a>
+                <a href="{{ url_for('alerts.alerts_list') }}">告警管理</a>
+                <a href="{{ url_for('elderly.elderly_list') }}">老人管理</a>
+                <a href="{{ url_for('services.services_list') }}">服务管理</a>
+                <a href="{{ url_for('staff.staff_list') }}" class="active">人员管理</a>
+            </nav>
+        </header>
+        
+        <main class="main">
+            <h2>人员详情 <a href="{{ url_for('staff.staff_list') }}" style="display:inline-block;padding:3px 10px;background:#6c757d;color:#fff;border-radius:4px;text-decoration:none;font-size:13px;">← 返回列表</a></h2>
+            
+            <div class="card">
+                <h3>基本信息</h3>
+                <table class="table">
+                    <tr><th>ID</th><td>{{ worker.worker_id }}</td></tr>
+                    <tr><th>姓名</th><td>{{ worker.name }}</td></tr>
+                    <tr><th>手机</th><td>{{ worker.phone }}</td></tr>
+                    <tr><th>性别</th><td>{{ '男' if worker.gender == 1 else '女' if worker.gender == 2 else '未知' }}</td></tr>
+                    <tr><th>类型</th><td>{{ worker_type_map.get(worker.worker_type, '类型' ~ worker.worker_type) }}</td></tr>
+                    <tr><th>状态</th><td>{{ worker_status_map.get(worker.status, '状态' ~ worker.status) }}</td></tr>
+                    <tr><th>注册时间</th><td>{{ worker.created_at.strftime('%Y-%m-%d') if worker.created_at else '' }}</td></tr>
+                </table>
+            </div>
+            
+            {% if wallet %}
+            <div class="card">
+                <h3>钱包信息</h3>
+                <table class="table">
+                    <tr><th>余额</th><td>¥{{ wallet.balance }}</td></tr>
+                    <tr><th>冻结金额</th><td>¥{{ wallet.frozen_amount }}</td></tr>
+                    <tr><th>总收入</th><td>¥{{ wallet.total_income }}</td></tr>
+                    <tr><th>总提现</th><td>¥{{ wallet.total_withdrawn }}</td></tr>
+                </table>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <h3>服务统计</h3>
+                <table class="table">
+                    <tr><th>总订单数</th><td>{{ total_orders }}</td></tr>
+                    <tr><th>已完成</th><td>{{ completed_orders }}</td></tr>
+                    <tr><th>已取消</th><td>{{ cancelled_orders }}</td></tr>
+                    <tr><th>已退款</th><td>{{ refund_orders }}</td></tr>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3>最近订单</h3>
+                {% if recent_orders %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>服务日期</th>
+                            <th>状态</th>
+                            <th>金额</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in recent_orders %}
+                        <tr>
+                            <td>{{ o.order_no }}</td>
+                            <td>{{ o.service_date.strftime('%Y-%m-%d') if o.service_date else '' }}</td>
+                            <td>{{ order_status_map.get(o.order_status, '状态' ~ o.order_status) }}</td>
+                            <td>¥{{ o.final_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>暂无订单</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

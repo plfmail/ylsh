@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单详情 - 银龄守护管理后台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>银龄守护 · 街道管理后台</h1>
+            <nav class="nav">
+                <a href="{{ url_for('dashboard.dashboard_page') }}">仪表盘</a>
+                <a href="{{ url_for('alerts.alerts_list') }}">告警管理</a>
+                <a href="{{ url_for('elderly.elderly_list') }}">老人管理</a>
+                <a href="{{ url_for('services.services_list') }}" class="active">服务管理</a>
+                <a href="{{ url_for('staff.staff_list') }}">人员管理</a>
+            </nav>
+        </header>
+        
+        <main class="main">
+            <h2>订单详情 <a href="{{ url_for('services.services_list') }}" style="display:inline-block;padding:3px 10px;background:#6c757d;color:#fff;border-radius:4px;text-decoration:none;font-size:13px;">← 返回列表</a></h2>
+            
+            <div class="card">
+                <h3>订单信息</h3>
+                <table class="table">
+                    <tr><th>订单号</th><td>{{ order.order_no }}</td></tr>
+                    <tr><th>服务老人</th><td>{{ elderly.name if elderly else '未知' }} ({{ elderly.phone if elderly else '' }})</td></tr>
+                    <tr><th>服务项目</th><td>{{ product.product_name if product else '未知' }}</td></tr>
+                    <tr><th>服务人员</th><td>{{ worker.name if worker else '未指派' }}</td></tr>
+                    <tr><th>服务日期</th><td>{{ order.service_date.strftime('%Y-%m-%d') if order.service_date else '' }}</td></tr>
+                    <tr><th>下单时间</th><td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else '' }}</td></tr>
+                    <tr><th>订单金额</th><td>¥{{ order.final_price }}</td></tr>
+                    <tr><th>订单状态</th><td>{{ order_status_map.get(order.order_status, '状态' ~ order.order_status) }}</td></tr>
+                </table>
+            </div>
+            
+            {% if worker %}
+            <div class="card">
+                <h3>服务人员信息</h3>
+                <table class="table">
+                    <tr><th>姓名</th><td>{{ worker.name }}</td></tr>
+                    <tr><th>手机</th><td>{{ worker.phone }}</td></tr>
+                    <tr><th>类型</th><td>{{ worker_type_map.get(worker.worker_type, '类型' ~ worker.worker_type) }}</td></tr>
+                </table>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <h3>操作日志</h3>
+                {% if logs %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>操作</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '' }}</td>
+                            <td>{{ log.action }}</td>
+                            <td>{{ log.remark or '' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>暂无日志</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

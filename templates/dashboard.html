@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - 银龄守护{% endblock %}
+{% block page_title %}<i class="fas fa-chart-pie"></i> 仪表盘{% endblock %}
+
+{% block content %}
+<!-- 统计卡片 -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-icon"><i class="fas fa-user-group"></i></div>
+            <div class="stat-info">
+                <div class="stat-number" id="elderlyCount">--</div>
+                <div class="stat-label">老人总数</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-danger">
+            <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+                <div class="stat-number" id="todayAlerts">--</div>
+                <div class="stat-label">今日告警</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-warning">
+            <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+            <div class="stat-info">
+                <div class="stat-number" id="activeOrders">--</div>
+                <div class="stat-label">进行中订单</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-success">
+            <div class="stat-icon"><i class="fas fa-user-gear"></i></div>
+            <div class="stat-info">
+                <div class="stat-number" id="workerCount">--</div>
+                <div class="stat-label">服务人员</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- 最近告警 -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-bell me-2"></i>最近告警</h6>
+                <a href="{{ url_for('alerts.alerts_list') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>告警编号</th>
+                                <th>老人</th>
+                                <th>类型</th>
+                                <th>级别</th>
+                                <th>状态</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentAlerts">
+                            <tr><td colspan="6" class="text-center text-muted py-3">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近订单 -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-handshake-angle me-2"></i>最近订单</h6>
+                <a href="{{ url_for('services.services_list') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>订单号</th>
+                                <th>老人</th>
+                                <th>服务</th>
+                                <th>状态</th>
+                                <th>日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrders">
+                            <tr><td colspan="5" class="text-center text-muted py-3">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 告警级别样式映射
+const levelBadge = {
+    0: '<span class="badge bg-danger">P0-紧急</span>',
+    1: '<span class="badge" style="background:#FDCB6E;color:#333">P1-高</span>',
+    2: '<span class="badge" style="background:#74B9FF;color:#333">P2-中</span>',
+    3: '<span class="badge bg-secondary">P3-低</span>',
+};
+
+// 订单状态样式映射
+const orderBadge = (s) => {
+    const m = {0:'secondary',1:'warning',2:'info',3:'primary',4:'success',5:'primary',6:'success',7:'danger',8:'dark'};
+    const t = {0:'待提交',1:'待支付',2:'已支付',3:'待接单',4:'已接单',5:'服务中',6:'已完成',7:'已取消',8:'已退款'};
+    return `<span class="badge bg-${m[s]||'secondary'}">${t[s]||'未知'}</span>`;
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 加载统计数据
+    fetch('/api/dashboard/stats')
+        .then(r => r.json())
+        .then(res => {
+            if (res.code === 0) {
+                document.getElementById('elderlyCount').textContent = res.data.elderly_count;
+                document.getElementById('todayAlerts').textContent = res.data.today_alerts;
+                document.getElementById('activeOrders').textContent = res.data.active_orders;
+                document.getElementById('workerCount').textContent = res.data.worker_count;
+            }
+        });
+
+    // 加载最近告警
+    fetch('/api/dashboard/alerts/recent')
+        .then(r => r.json())
+        .then(res => {
+            if (res.code === 0 && res.data.length > 0) {
+                const html = res.data.map(a => `
+                    <tr>
+                        <td><a href="/alerts/${a.alert_id}">${a.alert_no}</a></td>
+                        <td>${a.elderly_name}</td>
+                        <td>${a.alert_type}</td>
+                        <td>${levelBadge[a.alert_level] || ''}</td>
+                        <td>${a.alert_status}</td>
+                        <td>${a.alert_time}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('recentAlerts').innerHTML = html;
+            } else {
+                document.getElementById('recentAlerts').innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">暂无告警</td></tr>';
+            }
+        });
+
+    // 加载最近订单
+    fetch('/api/dashboard/orders/recent')
+        .then(r => r.json())
+        .then(res => {
+            if (res.code === 0 && res.data.length > 0) {
+                const html = res.data.map(o => `
+                    <tr>
+                        <td><a href="/services/${o.order_id}">${o.order_no}</a></td>
+                        <td>${o.elderly_name}</td>
+                        <td>${o.product_name}</td>
+                        <td>${orderBadge(o.order_status)}</td>
+                        <td>${o.service_date}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('recentOrders').innerHTML = html;
+            } else {
+                document.getElementById('recentOrders').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">暂无订单</td></tr>';
+            }
+        });
+});
+</script>
+{% endblock %}
